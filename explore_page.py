@@ -121,7 +121,7 @@ def show_explore_page():
         
   """,  unsafe_allow_html=True)
 
-  st.subheader("5. Information about dataset")
+
 
   d = old.groupby(['Operator', 'CallDropCategory']).size()
   d = d.reset_index()
@@ -131,6 +131,8 @@ def show_explore_page():
     ]
   st.write("Category wise calls for your operator")
   st.write(d)
+
+  st.subheader("5. Information about dataset")
 
   st.write("Calls made from each state")
   d = df.groupby(['StateName']).size()
@@ -150,7 +152,14 @@ def show_explore_page():
   d = d.rename(columns={0: 'Calls Dropped'})
   st.write(d)
 
-  df.groupby(['StateName']).size().plot(kind="bar")
-  
+
+  st.write("Statewise calls made")
+  st.bar_chart( df.groupby(['StateName']).size() )
 
 
+
+  st.write("Average Ratind by Network Type, Separated by Operator")
+
+  fig = plt.figure(figsize=(8, 5))
+  sns.pointplot(x='NetworkType', y='Rating', data=df, hue='Operator')
+  st.pyplot(fig)

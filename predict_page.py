@@ -26,8 +26,20 @@ dict1 = {1: 'Satisfactory', 2: 'Poor Voice Quality', 3: 'Call Dropped'}
 
 def load_model(model):
 	pick_read = open('Models/gaussNb_model.pkl', 'rb')
-	if model == "Multinomial NB":
+	if model == "Gauss NB":
+		pass
+	elif model == "Multinomial NB":
 		pick_read = open('Models/multiNb_model.pkl', 'rb')
+	elif model == "Decision Tree":
+		pick_read = open('Models/decisionTree_model.pkl', 'rb')
+	elif model == "KNN":
+		pick_read = open('Models/knn_model.pkl.pkl', 'rb')
+	elif model == "Neural Network":
+		pick_read = open('Models/MLP_model.pkl', 'rb')
+	elif model == "Random Forest":
+		pick_read = open('Models/randomForest_model.pkl', 'rb')
+	elif model == "SVM":
+		pick_read = open('Models/svm_model.pkl', 'rb')
 	data = pickle.load(pick_read)
 	return data
 
@@ -41,7 +53,8 @@ def show_predict_page():
 	network = st.selectbox("Network", list(obj['NetworkType'].keys()))
 	state = st.selectbox("State", list(obj['StateName'].keys()))
 	rating = st.slider("Rating", 1, 5, 1)
-	classifier = st.selectbox("Classifier", ("Gauss NB", "Multinomial NB", "Other"))
+	classifier = st.selectbox("Classifier",
+							  ("Gauss NB", "Multinomial NB", "Decision Tree", "KNN", "Neural Network", "Random Forest", "SVM"))
 	btn = st.button('Precit Call Drop')
 	if btn:
 		model = load_model(classifier)
