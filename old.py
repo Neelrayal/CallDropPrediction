@@ -82,39 +82,15 @@ def already_built(X_train, X_test, y_train, y_test):
     print("\nMLP (in %):", metrics.accuracy_score(y_test, y_pred) * 100)
     print(metrics.classification_report(y_test, y_pred))
 
-def feature_selection(X, y):
-    bestfeatures = SelectKBest(score_func=chi2, k=5)
-    fit = bestfeatures.fit(X, y)
-    dfscores = pd.DataFrame(fit.scores_)
-    dfcolumns = pd.DataFrame(X.columns)
-    # concat two dataframes for better visualization
-    featureScores = pd.concat([dfcolumns, dfscores], axis=1)
-    featureScores.columns = ['Specs', 'Score']  # naming the dataframe columns
-    print(featureScores.nlargest(10, 'Score'))  # print 10 best features
+    from sklearn.svm import SVC
+    svm = SVC(gamma=2)
+    svm.fit(X_train.values, y_train.values)
+    y_pred = svm.predict(X_test)
 
-def feature_importance(X,y):
-    from sklearn.ensemble import ExtraTreesClassifier
-    import matplotlib.pyplot as plt
-    model = ExtraTreesClassifier()
-    model.fit(X, y)
-    print(model.feature_importances_)  # use inbuilt class feature_importances of tree based classifiers
-    # plot graph of feature importances for better visualization
-    feat_importances = pd.Series(model.feature_importances_, index=X.columns)
-    feat_importances.nlargest(10).plot(kind='barh')
-    plt.show()
-
-    # Feature importance gives you a score for each feature of your data,
-    # the higher the score more important or relevant is the feature towards your output variable.
-
-def correelation_matrix(X,y, data):
-    # get correlations of each features in dataset
-
-    corrmat = data.corr()
-    top_corr_features = corrmat.index
-    plt.figure(figsize=(20, 20))
-    # plot heat map
-    g = sns.heatmap(data[top_corr_features].corr(), annot=True, cmap="RdYlGn")
-
+    with open('Models/svm_model.pkl', 'wb') as file:
+        pickle.dump(svm, file)
+    print("\nSVM (in %):", metrics.accuracy_score(y_test, y_pred) * 100)
+    print(metrics.classification_report(y_test, y_pred))
 
 def pre():
     df = pd.read_csv("MyCall_Data_September_2019_cleaning.csv")
@@ -166,14 +142,14 @@ def pre():
 
 
 def build_model(X_train, X_test, y_train, y_test):
-    from sklearn.neural_network import MLPClassifier
-    MLP = MLPClassifier()
-    MLP.fit(X_train.values,y_train.values)
-    y_pred = MLP.predict(X_test)
+    from sklearn.svm import SVC
+    svm = SVC(gamma=2)
+    svm.fit(X_train.values,y_train.values)
+    y_pred = svm.predict(X_test)
 
-    with open('Models/MLP_model.pkl', 'wb') as file:
-        pickle.dump(MLP, file)
-    print("\nMLP (in %):", metrics.accuracy_score(y_test, y_pred) * 100)
+    with open('Models/svm_model.pkl', 'wb') as file:
+        pickle.dump(svm, file)
+    print("\nSVM (in %):", metrics.accuracy_score(y_test, y_pred) * 100)
     print(metrics.classification_report(y_test, y_pred))
 
 
