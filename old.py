@@ -1,19 +1,62 @@
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import pickle
-
-import seaborn as sns
+import pandas as pd
 from sklearn import metrics
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2
+
+'''
+     Pre function contains the old code if someone wants to know how the independent (X) and depenent (y) features were created. 
+     already_built() is used to denote the code for already built fun. 
+     build_model() is used to built a new model without disturbing the old model
+'''
 
 
-global X_train, X_test, y_train, y_test
+def pre():
+    df = pd.read_csv("MyCall_Data_September_2019_cleaning.csv")
+
+    df.drop(['Latitude', 'Longitude'], axis='columns', inplace=True)
+
+    df.rename(columns={
+        'In Out Travelling': 'InOut', 'Network Type': 'NetworkType', 'Call Drop Category': 'CallDropCategory',
+        'State Name': 'StateName'
+    }, inplace=True)
+
+
+
+    obj = {
+        'Operator': {'RJio': 1, 'Airtel': 2, 'Idea': 3, 'Other': 4, 'Vodafone': 5, 'BSNL': 6, 'MTNL': 7},
+        'InOut': {'Indoor': 1, 'Outdoor': 2, 'Travelling': 3},
+        'NetworkType': {'4G': 1, '3G': 2, '2G': 3},
+        'CallDropCategory': {'Satisfactory': 1, 'Poor Voice Quality': 2, 'Call Dropped': 3},
+        'StateName': {}
+    }
+
+    count = 1
+    for x in df['StateName'].unique():
+        obj['StateName'][x] = count
+        count += 1
+
+    # Do not run this code two times, otherwise the map function will convert all non-matched values to NaN
+
+    df['Operator'] = df['Operator'].map(
+        {'RJio': 1, 'Airtel': 2, 'Idea': 3, 'Other': 4, 'Vodafone': 5, 'BSNL': 6, 'MTNL': 7})
+
+    df['InOut'] = df['InOut'].map({'Indoor': 1, 'Outdoor': 2, 'Travelling': 3})
+
+    df['NetworkType'] = df['NetworkType'].map({'4G': 1, '3G': 2, '2G': 3})
+
+    df['CallDropCategory'] = df['CallDropCategory'].map({'Satisfactory': 1, 'Poor Voice Quality': 2, 'Call Dropped': 3})
+
+    df['StateName'] = df['StateName'].map(obj['StateName'])
+
+    X = df.columns.tolist()
+    X.remove('CallDropCategory')
+    X = df[X]
+    X.to_pickle('Models/X.pkl')
+
+    y = df['CallDropCategory']
+    y.to_pickle('Models/y.pkl')
+
 
 def already_built(X_train, X_test, y_train, y_test):
-
     from sklearn.naive_bayes import GaussianNB
     gaussNb = GaussianNB()
     gaussNb.fit(X_train.values, y_train.values)
@@ -92,64 +135,18 @@ def already_built(X_train, X_test, y_train, y_test):
     print("\nSVM (in %):", metrics.accuracy_score(y_test, y_pred) * 100)
     print(metrics.classification_report(y_test, y_pred))
 
-def pre():
-    df = pd.read_csv("MyCall_Data_September_2019_cleaning.csv")
-
-    df.drop(['Latitude', 'Longitude'], axis='columns', inplace=True)
-
-    df.rename(columns={
-        'In Out Travelling': 'InOut', 'Network Type': 'NetworkType', 'Call Drop Category': 'CallDropCategory',
-        'State Name': 'StateName'
-    }, inplace=True)
-
-    old = df.copy()
-
-    obj = {
-        'Operator': {'RJio': 1, 'Airtel': 2, 'Idea': 3, 'Other': 4, 'Vodafone': 5, 'BSNL': 6, 'MTNL': 7},
-        'InOut': {'Indoor': 1, 'Outdoor': 2, 'Travelling': 3},
-        'NetworkType': {'4G': 1, '3G': 2, '2G': 3},
-        'CallDropCategory': {'Satisfactory': 1, 'Poor Voice Quality': 2, 'Call Dropped': 3},
-        'StateName': {}
-    }
-
-    count = 1
-    for x in df['StateName'].unique():
-        obj['StateName'][x] = count
-        count += 1
-
-    # Do not run this code two times, otherwise the map function will convert all non-matched values to NaN
-
-    df['Operator'] = df['Operator'].map(
-        {'RJio': 1, 'Airtel': 2, 'Idea': 3, 'Other': 4, 'Vodafone': 5, 'BSNL': 6, 'MTNL': 7})
-
-    df['InOut'] = df['InOut'].map({'Indoor': 1, 'Outdoor': 2, 'Travelling': 3})
-
-    df['NetworkType'] = df['NetworkType'].map({'4G': 1, '3G': 2, '2G': 3})
-
-    df['CallDropCategory'] = df['CallDropCategory'].map({'Satisfactory': 1, 'Poor Voice Quality': 2, 'Call Dropped': 3})
-
-    df['StateName'] = df['StateName'].map(obj['StateName'])
-
-    X = df.columns.tolist()
-    X.remove('CallDropCategory')
-    X = df[X]
-    X.to_pickle('Models/X.pkl')
-
-    y = df['CallDropCategory']
-    y.to_pickle('Models/y.pkl')
-
-
-
 
 def build_model(X_train, X_test, y_train, y_test):
-    from sklearn.svm import SVC
-    svm = SVC(gamma=2)
-    svm.fit(X_train.values,y_train.values)
-    y_pred = svm.predict(X_test)
+    from sklearn.naive_bayes import MultinomialNB
+    MultiNb = MultinomialNB()
+    MultiNb.fit(X_train.values, y_train.values)
 
-    with open('Models/svm_model.pkl', 'wb') as file:
-        pickle.dump(svm, file)
-    print("\nSVM (in %):", metrics.accuracy_score(y_test, y_pred) * 100)
+    # saving the model as pickel module
+    with open('Models/multiNb_model.pkl', 'wb') as file:
+        pickle.dump(MultiNb, file)
+
+    y_pred = MultiNb.predict(X_test)
+    print("\Multinomail Naive Bayes model accuracy(in %):", metrics.accuracy_score(y_test, y_pred) * 100)
     print(metrics.classification_report(y_test, y_pred))
 
 
@@ -166,7 +163,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
