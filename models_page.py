@@ -60,7 +60,6 @@ def show_models_page():
   directory = 'Models'
 
   df = pd.DataFrame(columns=['Name', 'Accuracy'])
-  count = 0
   for filename in os.scandir(directory):
     if filename.is_file() and "_model.pkl" in filename.path:
       model = pd.read_pickle(filename.path)
