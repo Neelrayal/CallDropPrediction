@@ -50,8 +50,6 @@ filename_replace = {
 }
 
 
-
-
 def show_models_page():
   st.title(" Models page ")
   X = pd.read_pickle('Models/X.pkl')

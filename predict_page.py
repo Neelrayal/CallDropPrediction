@@ -33,7 +33,7 @@ def load_model(model):
 	elif model == "Decision Tree":
 		pick_read = open('Models/decisionTree_model.pkl', 'rb')
 	elif model == "KNN":
-		pick_read = open('Models/knn_model.pkl.pkl', 'rb')
+		pick_read = open('Models/knn_model.pkl', 'rb')
 	elif model == "Neural Network":
 		pick_read = open('Models/MLP_model.pkl', 'rb')
 	elif model == "Random Forest":
